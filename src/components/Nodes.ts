@@ -17,18 +17,20 @@ export async function getNodes() {
 
 function updateNodeDefaults(node: FullNode): FullNode {
 
-    if (node.extras.status == null)
-        node.extras.status = Status.STOP;
+    if (node.data.status == null)
+        node.data.status = Status.STOP;
 
-    if (node.extras.status == Status.STOP)
+    if (node.data.status == Status.STOP)
         node.class = 'node-stop'
 
-    else if (node.extras.status == Status.RUNNING)
+    else if (node.data.status == Status.RUNNING)
         node.class = 'animated-gradient'
 
-    else if (node.extras.status == Status.DONE)
+    else if (node.data.status == Status.DONE)
         node.class = 'node-done'
 
+    else if (node.data.status == Status.PAUSE)
+        node.class = 'node-pause'
     //node.draggable = false
     return node;
 }
@@ -42,7 +44,7 @@ export function onAddNode(e: MouseEvent, n: NewNode) {
         label: n.label,
         position: { x: e.x, y: e.y },
         type: 'custom',
-        extras: {
+        data: {
             status: Status.STOP,
             description: n.description,
             repo: n.repo,
@@ -59,4 +61,3 @@ async function createNode(node: FullNode) {
     const response= await axios.post('api/node/new', node);
     return response.data;
 }
-
