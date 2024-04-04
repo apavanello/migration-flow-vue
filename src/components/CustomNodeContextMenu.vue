@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import {getCurrentInstance, ref} from "vue"
 import {ContextMenu, ContextMenuGroup, ContextMenuItem } from "@imengyu/vue3-context-menu"
-import {getNodes} from "./Nodes.ts"
+import {getNodes, deleteNode, updateNodeStatus} from "./Nodes.ts"
 import {getEdges} from "./Edges.ts"
 import {Status} from "./CustomTypes.ts"
-import axios from "axios"
 
 // import Details from "./Details.vue";
 import {type Node, type NodeMouseEvent} from "@vue-flow/core"
@@ -39,40 +38,17 @@ function ShowNodeContextMenu (e : NodeMouseEvent) {
 
 }
 
-async function deleteNode(node: Node) {
-    await axios.post(
-        '/api/node/delete',
-        {
-            id: node.id
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'Delete-Type': 'node'
-            }
-        }
-    );
-    console.log('deleteNode')
+async function onDeleteNode(node: Node) {
+    await deleteNode(node)
     refresh();
 }
 
-async function updateNodeStatus(node: Node, status: Status) {
-    await axios.post(
-        '/api/node/update',
-        {
-            id: node.id,
-            status: status
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'Update-Type': 'status'
-            }
-        }
-    );
-    console.log('updateNodeStatus')
+async function onUpdateNodeStatus(node: Node, status: Status) {
+  await updateNodeStatus(node, status)
     refresh();
 }
+
+
 function refresh() {
 
     getNodes()
@@ -90,12 +66,12 @@ function refresh() {
       :options="options"
   >
     <context-menu-group label="Alterar Status">
-      <context-menu-item label="Não Iniciado" @click="updateNodeStatus(node, Status.STOP)"/>
-      <context-menu-item label="Em execução" @click="updateNodeStatus(node, Status.RUNNING)"/>
-      <context-menu-item label="Pausado" @click="updateNodeStatus(node, Status.PAUSE)"/>
-      <context-menu-item label="Concluído" @click="updateNodeStatus(node, Status.DONE)"/>
+      <context-menu-item label="Não Iniciado" @click="onUpdateNodeStatus(node, Status.STOP)"/>
+      <context-menu-item label="Em execução" @click="onUpdateNodeStatus(node, Status.RUNNING)"/>
+      <context-menu-item label="Pausado" @click="onUpdateNodeStatus(node, Status.PAUSE)"/>
+      <context-menu-item label="Concluído" @click="onUpdateNodeStatus(node, Status.DONE)"/>
   </context-menu-group>
     <context-menu-sperator/>
-    <context-menu-item label="Excluir Node" @click="deleteNode(node)"/>
+    <context-menu-item label="Excluir Node" @click="onDeleteNode(node)"/>
   </context-menu>
 </template>

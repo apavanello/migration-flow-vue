@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { NodeProps } from '@vue-flow/core'
+import type { NodeProps, Node } from '@vue-flow/core'
 import {Handle, Position} from '@vue-flow/core'
-import {computed, ref} from "vue";
+import {computed, ref, getCurrentInstance} from "vue";
 import {type NodesData, Status} from "./CustomTypes.ts";
+import CustomDialog from "./CustomDialog.vue";
+import {getNodes, updateNode} from "./Nodes.ts";
+import {getEdges} from "./Edges.ts";
+
 
 
 interface Props extends NodeProps {
@@ -12,7 +16,9 @@ interface Props extends NodeProps {
 // props were passed from the slot using `v-bind="customNodeProps"`
 const props = defineProps<Props>()
 const show = ref(false)
-const editShow = ref(false)
+
+const dialog = ref(false)
+
 
 const changeOnStatus = computed(() => {
   switch (props.data.status) {
@@ -26,6 +32,41 @@ const changeOnStatus = computed(() => {
       return 'red'
   }
 })
+
+function showDialog() {
+  dialog.value = true
+
+}
+function onCloseDialog() {
+  dialog.value = false
+}
+
+function onSaveDialog(data: any) {
+  const node = {
+    id: props.id,
+    position: props.position,
+    label: data.label,
+    data: {
+      ...props.data,
+      ...data
+    }
+  } as Node
+
+  updateNode(node).then(() => {
+    refresh()
+  })
+  dialog.value = false
+}
+
+function refresh() {
+
+  getNodes()
+  getEdges()
+  const instance = getCurrentInstance();
+  instance?.proxy?.$forceUpdate();
+
+  console.log('refresh')
+}
 
 </script>
 
@@ -64,7 +105,7 @@ const changeOnStatus = computed(() => {
                 style="text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;"
             >
               <v-icon icon="mdi-account-multiple" start></v-icon>
-              Authorization
+              {{ props.data.squad }}
             </v-chip>
           </v-col>
         </v-row>
@@ -75,24 +116,24 @@ const changeOnStatus = computed(() => {
         <v-row>
           <v-col class="px-4 py-1">
             <v-chip class="pa-1 ma-0 w-full" label>
-              Start: 1:00
+              Start: {{ props.data.startTime}}
             </v-chip>
           </v-col>
           <v-col class="px-4 py-1">
             <v-chip class="pa-1 ma-0 w-full" label>
-              End: TBD
+              End: {{ props.data.endTime}}
             </v-chip>
           </v-col>
         </v-row>
         <v-row>
           <v-col class="px-4 py-1">
             <v-chip class="pa-1 ma-0 w-full" label>
-              Planed Start: 1:00
+              Planed Start: {{ props.data.planedStartTime }}
             </v-chip>
           </v-col>
           <v-col class="px-4 py-1">
             <v-chip class="pa-1 ma-0 w-full" label>
-              Planed End: 3:00
+              Planed End: {{ props.data.planedEndTime }}
             </v-chip>
           </v-col>
         </v-row>
@@ -108,7 +149,7 @@ const changeOnStatus = computed(() => {
       <v-spacer></v-spacer>
       <v-btn
           variant="outlined"
-          @click="editShow = !editShow"
+          @click="showDialog"
       >
         Edit
       </v-btn>
@@ -134,5 +175,23 @@ const changeOnStatus = computed(() => {
       </div>
     </v-expand-transition>
   </v-card>
+  <CustomDialog
+      v-model:dialog="dialog"
+      :label="props.label"
+      :description="props.data.description"
+      :repo="props.data.repo"
+      :squad="props.data.squad"
+      :startTime="props.data.startTime"
+      :endTime="props.data.endTime"
+      :pStartTime="props.data.planedStartTime"
+      :pEndTime="props.data.planedEndTime"
+
+
+      @onSaveDialog="onSaveDialog"
+      @onCloseDialog="onCloseDialog"
+
+  >
+
+  </CustomDialog>
 
 </template>

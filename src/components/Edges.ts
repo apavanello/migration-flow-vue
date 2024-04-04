@@ -20,6 +20,7 @@ export async function getEdges() {
 function updateEdgeDefaults(edge: Edge): Edge {
     edge.labelStyle = { fill: '#10b981', fontWeight: 700 }
     edge.style = { strokeWidth: 3}
+    edge.deletable = false
     return edge;
 }
 
